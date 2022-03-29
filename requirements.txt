@@ -1,0 +1,14 @@
+Cython
+dlib
+face_recognition_models
+imageio
+matplotlib
+multiprocessing_logging
+numpy
+pandas
+opencv_python
+scikit_image
+scikit_learn
+scipy
+torch
+torchvision
