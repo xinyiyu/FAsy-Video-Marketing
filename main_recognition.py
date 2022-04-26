@@ -126,7 +126,7 @@ def recognize_align_compose(frame_dir, align_dir, compo_dir, score_dir, filt_inf
         mean_encoding = np.mean(X, axis=0)
         mean_encoding_l = np.mean(X[np.where(y == large_id)[0]], axis=0)
         mean_encoding_s = np.mean(X[np.where(y == small_id)[0]], axis=0)
-        known_encodings.extend(X[np.argsort(np.linalg.norm(X[np.where(y == small_id)[0]] - mean_encoding_s, axis=1))[:cluster_n].tolist()])
+        known_encodings.extend(X[np.argsort(np.linalg.norm(X[np.where(y == large_id)[0]] - mean_encoding_s, axis=1))[:cluster_n].tolist()])
         
         X_l = X[np.where(y == large_id)[0], :]
         X_s = X[np.where(y == small_id)[0], :]
@@ -136,7 +136,7 @@ def recognize_align_compose(frame_dir, align_dir, compo_dir, score_dir, filt_inf
         # only use larger cluster if minimum distance between two clusters is greater than min_dist
         if min_between_dist_cluster <= min_dist:
             known_encodings.append(X[np.argmin(np.linalg.norm(X - mean_encoding, axis=1))])
-            known_encodings.extend(X[np.argsort(np.linalg.norm(X[np.where(y == large_id)[0]] - mean_encoding_l, axis=1))[:cluster_n].tolist()])
+            known_encodings.extend(X[np.argsort(np.linalg.norm(X[np.where(y == small_id)[0]] - mean_encoding_l, axis=1))[:cluster_n].tolist()])
         known_encodings = np.array(known_encodings)
 
         ## recognize

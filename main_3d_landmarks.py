@@ -79,6 +79,7 @@ def detect_3d_landmarks(frame_dir, score_dir):
     frame_ids = frame_info.loc[frame_info['has_target'] == 1, 'frame_id'].tolist()
     if len(frame_ids) == 0:
         print(f"[{datetime.today().strftime('%Y-%m-%d %H:%M:%S')}] No target, will not estimate euler angles for video {frame_dir.split('/')[-1]}")
+        logging.info(f"[{datetime.today().strftime('%Y-%m-%d %H:%M:%S')}] No target, will not estimate euler angles for video {frame_dir.split('/')[-1]}")
         return
 
     ## load pre-tained model: 3DDFA
