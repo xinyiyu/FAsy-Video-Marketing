@@ -165,74 +165,73 @@ We measure facial masculinity and asymmetry based on facial keypoints. Because e
 
 Specify the directory containing all filtered frames and scores, also specify the root for saving measurement results, the directory for saving aligned face images, the file path for saving detected face mesh keypoints (478 points) and gender estimation file path if any. Run `face_masculinity.py`:
     
-    ```
-    python face_masculinity.py \
-        --frame-root test/all_frames \
-        --score-root test/all_scores \
-        --align-root gender/align \
-        --output-root gender \
-        --gender-est gender/gender_est.csv \
-        --all-landmarks gender/all_mesh_landmarks.pkl
-    ```
+```
+python face_masculinity.py \
+    --frame-root test/all_frames \
+    --score-root test/all_scores \
+    --align-root gender/align \
+    --output-root gender \
+    --gender-est gender/gender_est.csv \
+    --all-landmarks gender/all_mesh_landmarks.pkl
+```
     
 The facial masculinity and asymmetry measurement result will be saved in `gender/facial_masculinity_asymmetry.csv`. Here, gender estimation is just for the purpose of categorizing results by gender, and it will not be used in the calculation (currently, the facial masculinity and asymmetry will not be scaled by gender). To estimate the gender of each speaker in the video, run `detect_gender.py`:
     
-    ```
-    python detect_gender.py \
-        --video-root test/all_aligned \
-        --output-root gender\
-        --nsamples 100
-    ```
+```
+python detect_gender.py \
+    --video-root test/all_aligned \
+    --output-root gender\
+    --nsamples 100
+```
 
 I also provide a step-by-step demo for measuring facial masculinity in `facial_masculinity.ipynb`. This notebook illustrates measuring facial masculinity from video, and measuring facial masculinity for a verification image set.
     
 ### Voice masculinity and other voice features
 To voice masculinity and other voice features from video, first we extract audio track from a video segment (e.g 10th~20th second):
 
-    ```
-    python voice_masculinity.py \
-        --video-root x_video \
-        --audio-root gender/audio \
-        --subclip 10,20
-    ```
+```
+python voice_masculinity.py \
+    --video-root x_video \
+    --audio-root gender/audio \
+    --subclip 10,20
+```
 
 Second, convert stereo sound to mono sound by averaging the two channels:
 
-    ```
-    python voice_masculinity.py \
-        --audio-root gender/audio \
-        --mono-root gender/mono
-    ```
+```
+python voice_masculinity.py \
+    --audio-root gender/audio \
+    --mono-root gender/mono
+```
 
 Third, seperate human voice by similarity matrix and median filter (if `--plot-root` is specified, mixture and separate spectrograms will be saved):
 
-    ```
-    separate_voice = python voice_masculinity.py \
-        --mono-root gender/mono \
-        --voice-root gender/voice \
-        --plot-root gender/plot
-
-    ```
+```
+separate_voice = python voice_masculinity.py \
+    --mono-root gender/mono \
+    --voice-root gender/voice \
+    --plot-root gender/plot
+```
     
 Lastly, esimate pitch  and other acoustic values. Pitch is tracked by `parselmouth` package or `crepe` package, the former one is based on autocorrelation, the latter one is based on neural network. Since the neural network is trained on instrument sound but not human voice, `parselmouth` package is recommended. The pitch estimation for each person is the median of tracked pitch within the range 60~300Hz. If `--plot-root` is specified, pitch track plot will be saved.
     
-    ```
-    python voice_masculinity.py \
-        --voice-root gender/voice \
-        --output-root gender \
-        --pitch-root gender/pitch \
-        --plot-root gender/plot \
-        --pitch-package parselmouth
-    ```
+```
+python voice_masculinity.py \
+    --voice-root gender/voice \
+    --output-root gender \
+    --pitch-root gender/pitch \
+    --plot-root gender/plot \
+    --pitch-package parselmouth
+```
 
 Additionally, scale voice by gender (this step may not be performed since the mean and standard deviation of human voice are not appropriate for normalizing the estimated pitch):
 
-    ```
-    python voice_masculinity.py \
-        --output-root gender \
-        --gender-est gender/gender_est.csv \
-        --pitch-package parselmouth
-    ```
+``` 
+python voice_masculinity.py \
+    --output-root gender \
+    --gender-est gender/gender_est.csv \
+    --pitch-package parselmouth
+```
     
 The estimated pitch, scaled voice gender and other acoustic values will be saved in `gender/pitch_est_parselmouth.csv`, `gender/voice_gender_parselmouth.csv` and `gender/other_acoustic_measurement.csv`, respectively.
 
