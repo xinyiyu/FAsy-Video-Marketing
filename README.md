@@ -184,7 +184,7 @@ python detect_gender.py \
     --nsamples 100
 ```
 
-I also provide a step-by-step demo for measuring facial masculinity in `facial_masculinity.ipynb`. This notebook illustrates measuring facial masculinity from video, and measuring facial masculinity for a verification image set.
+I also provide a step-by-step demo for measuring facial masculinity in `face_masculinity.ipynb`. This notebook illustrates measuring facial masculinity from video, and measuring facial masculinity for a verification image set.
     
 ### Voice masculinity and other voice features
 To voice masculinity and other voice features from video, first we extract audio track from a video segment (e.g 10th~20th second):
@@ -239,9 +239,9 @@ The estimated pitch, scaled voice gender and other acoustic values will be saved
 [1] face_recognition: https://github.com/ageitgey/face_recognition \
 [2] 3DDFA: https://github.com/cleardusk/3DDFA \
 [3] Emotion FERPlus: https://github.com/onnx/models/tree/main/vision/body_analysis/emotion_ferplus \
-[4] EmoNet: https://github.com/face-analysis/emonet
+[4] EmoNet: https://github.com/face-analysis/emonet \
 [5] Gender-and-Age-Detection: https://github.com/smahesh29/Gender-and-Age-Detection \
 [6] mediapipe: https://google.github.io/mediapipe/solutions/face_mesh \
 [7] REPET-SIM method: https://librosa.org/librosa_gallery/auto_examples/plot_vocal_separation.html \
-[8] Parselmouth: https://github.com/YannickJadoul/Parselmouth/tree/stable
+[8] Parselmouth: https://github.com/YannickJadoul/Parselmouth/tree/stable \
 [9] crepe: https://github.com/marl/crepe
