@@ -1,5 +1,5 @@
-# Facial asymmetry measurement
-This repository implements facial asymmetry measurement part of "Asymmetry of Facial Expressions and Emotional Labor in Video Marketing".
+# Facial and voice features measurement
+This repository implements the proposal of measuring facial asymmetry for analyzing its effect on video marketing. Additional functions include measure facial masculinity, facial asymmetry by facial keypoints and voice masculinity as well as other voice features.
 
 ## Installation
 1. Git clone the repository and create an environment:
@@ -20,15 +20,15 @@ This repository implements facial asymmetry measurement part of "Asymmetry of Fa
     
 3. Move the video folder (e.g `x_xideo/`) into this directory.
 
-## Usage
-Take processing videos in `x_video/` as an example. All the processed images as well as scores will be saved in `results/`. `test_script.py` shows example commands. 
+## Facial asymmetry measurement project
+Take processing videos in `x_video/` as an example. All the processed images as well as scores will be saved in `test/`. `test_script.py` shows example commands. 
 
 1. Step 1: Extract frames from each video. Sample videos are in `./x_video`. Specify the extraction frequency and directory for saving frames and run `main_extraction.py`. For example, extract one frame per second:
 
     ```
     python main_extraction.py \
         --video-root x_video/ \
-        --frame-root results/freq1_frames/ \
+        --frame-root test/freq1_frames/ \
         --extract-freq 1
     ```
     
@@ -41,11 +41,11 @@ Take processing videos in `x_video/` as an example. All the processed images as 
     ```
     python main_recognition.py \
         --video-root x_video/ \
-        --frame-root results/freq1_frames/ \
-        --align-root results/freq1_aligned/ \
-        --compo-root results/freq1_composite/ \
-        --score-root results/freq1_scores/ \
-        --pre-filter-file results/freq1_pre_filter.txt \
+        --frame-root test/freq1_frames/ \
+        --align-root test/freq1_aligned/ \
+        --compo-root test/freq1_composite/ \
+        --score-root test/freq1_scores/ \
+        --pre-filter-file test/freq1_pre_filter.txt \
         --verbose
     ```
     
@@ -82,8 +82,8 @@ Take processing videos in `x_video/` as an example. All the processed images as 
     ```
     python main_3d_landmarks.py \
         --video-root x_video/ \
-        --frame-root results/freq1_frames/ \
-        --score-root results/freq1_scores/ \
+        --frame-root test/freq1_frames/ \
+        --score-root test/freq1_scores/ \
         --device cuda:0 
     ```
     
@@ -96,9 +96,9 @@ Take processing videos in `x_video/` as an example. All the processed images as 
     ```
     python main_emotion.py \
         --video-root x_video/ \
-        --align-root results/freq1_aligned/ \
-        --compo-root results/freq1_composite/ \
-        --score-root results/freq1_scores/ \
+        --align-root test/freq1_aligned/ \
+        --compo-root test/freq1_composite/ \
+        --score-root test/freq1_scores/ \
         --gpus 2,3 \
         --fer-model emonet \
         --verbose
@@ -119,11 +119,11 @@ Take processing videos in `x_video/` as an example. All the processed images as 
     
     In this step, for 'ferplus', I use multiprocessing with CPU (~15 minutes for all frames); for 'emonet', both CPU and GPU (single or multiple) are supported, and videos will be process in a loop (GPU is recommended and it takes ~5 minutes for all frames with 4 GPUs and batch size 64). 
     
-    Finally, the structure of `results/` folder will be:
+    Finally, the structure of `test` folder will be:
 
     ```
     Structure:
-    results/
+    test/
     |-- freq1_pre_filter.txt
     |-- freq1_frames/
     |   |-- <video_1>/
@@ -157,11 +157,92 @@ Take processing videos in `x_video/` as an example. All the processed images as 
     |   |-- ...
     ```
 
-## Result
 Some result analysis can be found in `result_analysis.ipynb`.
+
+## Facial and voice masculinity project
+### Facial masculinity and asymmetry
+We measure facial masculinity and asymmetry based on facial keypoints. Because each target person is the speaker in a video, we need to reuse some steps in the "Facial asymmetry measurement" project, including extracting frames, recognizing target faces and estimating Euler angles as well as facial expression to filter frames for further use. Here, I assume that the steps in the "Facial asymmetry measurement" project have been performed so that the frames and scores (68 landmarks, Euler angles and facial expression) have been saved in the `test` directory. Then based on these results, we can filter frames, align faces in filtered frames, calculate distances and estimate facial masculinity as well as asymmetry. 
+
+Specify the directory containing all filtered frames and scores, also specify the root for saving measurement results, the directory for saving aligned face images, the file path for saving detected face mesh keypoints (478 points) and gender estimation file path if any. Run `face_masculinity.py`:
+    
+    ```
+    python face_masculinity.py \
+        --frame-root test/all_frames \
+        --score-root test/all_scores \
+        --align-root gender/align \
+        --output-root gender \
+        --gender-est gender/gender_est.csv \
+        --all-landmarks gender/all_mesh_landmarks.pkl
+    ```
+    
+The facial masculinity and asymmetry measurement result will be saved in `gender/facial_masculinity_asymmetry.csv`. Here, gender estimation is just for the purpose of categorizing results by gender, and it will not be used in the calculation (currently, the facial masculinity and asymmetry will not be scaled by gender). To estimate the gender of each speaker in the video, run `detect_gender.py`:
+    
+    ```
+    python detect_gender.py \
+        --video-root test/all_aligned \
+        --output-root gender\
+        --nsamples 100
+    ```
+
+I also provide a step-by-step demo for measuring facial masculinity in `facial_masculinity.ipynb`. This notebook illustrates measuring facial masculinity from video, and measuring facial masculinity for a verification image set.
+    
+### Voice masculinity and other voice features
+To voice masculinity and other voice features from video, first we extract audio track from a video segment (e.g 10th~20th second):
+
+    ```
+    python voice_masculinity.py \
+        --video-root x_video \
+        --audio-root gender/audio \
+        --subclip 10,20
+    ```
+
+Second, convert stereo sound to mono sound by averaging the two channels:
+
+    ```
+    python voice_masculinity.py \
+        --audio-root gender/audio \
+        --mono-root gender/mono
+    ```
+
+Third, seperate human voice by similarity matrix and median filter (if `--plot-root` is specified, mixture and separate spectrograms will be saved):
+
+    ```
+    separate_voice = python voice_masculinity.py \
+        --mono-root gender/mono \
+        --voice-root gender/voice \
+        --plot-root gender/plot
+
+    ```
+    
+Lastly, esimate pitch  and other acoustic values. Pitch is tracked by `parselmouth` package or `crepe` package, the former one is based on autocorrelation, the latter one is based on neural network. Since the neural network is trained on instrument sound but not human voice, `parselmouth` package is recommended. The pitch estimation for each person is the median of tracked pitch within the range 60~300Hz. If `--plot-root` is specified, pitch track plot will be saved.
+    
+    ```
+    python voice_masculinity.py \
+        --voice-root gender/voice \
+        --output-root gender \
+        --pitch-root gender/pitch \
+        --plot-root gender/plot \
+        --pitch-package parselmouth
+    ```
+
+Additionally, scale voice by gender (this step may not be performed since the mean and standard deviation of human voice are not appropriate for normalizing the estimated pitch):
+
+    ```
+    python voice_masculinity.py \
+        --output-root gender \
+        --gender-est gender/gender_est.csv \
+        --pitch-package parselmouth
+    ```
+    
+The estimated pitch, scaled voice gender and other acoustic values will be saved in `gender/pitch_est_parselmouth.csv`, `gender/voice_gender_parselmouth.csv` and `gender/other_acoustic_measurement.csv`, respectively.
 
 ## References
 [1] face_recognition: https://github.com/ageitgey/face_recognition \
 [2] 3DDFA: https://github.com/cleardusk/3DDFA \
 [3] Emotion FERPlus: https://github.com/onnx/models/tree/main/vision/body_analysis/emotion_ferplus \
 [4] EmoNet: https://github.com/face-analysis/emonet
+[5] Gender-and-Age-Detection: https://github.com/smahesh29/Gender-and-Age-Detection \
+[6] mediapipe: https://google.github.io/mediapipe/solutions/face_mesh \
+[7] REPET-SIM method: https://librosa.org/librosa_gallery/auto_examples/plot_vocal_separation.html \
+[8] Parselmouth: https://github.com/YannickJadoul/Parselmouth/tree/stable
+[9] crepe: https://github.com/marl/crepe

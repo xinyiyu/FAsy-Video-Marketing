@@ -12,3 +12,9 @@ scikit_learn
 scipy
 torch
 torchvision
+mediapipe
+librosa
+soundfile
+crepe
+praat_parselmouth
+moviepy
